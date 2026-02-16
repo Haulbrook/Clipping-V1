@@ -10,7 +10,7 @@ class ChatManager {
 
         // AI routing keywords for each tool
         this.toolKeywords = {
-            inventory: ['inventory', 'stock', 'plants', 'supplies', 'materials', 'clippings', 'search', 'find', 'boxwood', 'mulch', 'fertilizer'],
+            inventory: ['inventory', 'stock', 'plants', 'supplies', 'materials', 'clippings', 'search', 'find', 'boxwood', 'mulch', 'fertilizer', 'browse', 'list all', 'show all'],
             grading: ['grade', 'quality', 'assess', 'evaluation', 'sell', 'pricing', 'condition', 'value'],
             scheduler: ['schedule', 'calendar', 'crew', 'task', 'appointment', 'plan', 'assign', 'daily', 'tomorrow'],
             tools: ['tools', 'rental', 'checkout', 'equipment', 'borrow', 'return', 'maintenance'],
@@ -624,6 +624,11 @@ class ChatManager {
     }
 
     formatMessageContent(content, type) {
+        // Return HTML table directly without markdown formatting
+        if (type === 'inventory_table') {
+            return content;
+        }
+
         // Basic markdown-like formatting
         let formatted = content
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // **bold**
@@ -638,6 +643,166 @@ class ChatManager {
         }
         
         return formatted;
+    }
+
+    async handleBrowseInventory() {
+        this.showTypingIndicator(true);
+
+        try {
+            const api = window.app?.api;
+            if (!api) {
+                throw new Error('API manager not available');
+            }
+
+            const result = await api.browseInventory();
+            this.showTypingIndicator(false);
+
+            const data = result?.response || result;
+            const items = data?.items || [];
+            const total = data?.total || items.length;
+
+            if (items.length === 0) {
+                this.addMessage('No inventory items found. The inventory sheet may be empty.', 'assistant');
+                return;
+            }
+
+            // Store items for sorting
+            this._browseItems = items;
+            this._browseSortColumn = null;
+            this._browseSortAsc = true;
+
+            const tableHtml = this.buildInventoryTable(items, total);
+            this.addMessage(tableHtml, 'assistant', 'inventory_table');
+
+        } catch (error) {
+            this.showTypingIndicator(false);
+            this.addMessage('Failed to load inventory. Please try again later.', 'assistant', 'error');
+            console.error('Browse inventory error:', error);
+        }
+    }
+
+    buildInventoryTable(items, total) {
+        const esc = (text) => {
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        };
+
+        let html = `<div class="inventory-browse-container">`;
+        html += `<div class="inventory-browse-header">`;
+        html += `<h4>Inventory (${total} items)</h4>`;
+        html += `<input type="text" class="inventory-browse-filter" placeholder="Filter items..." oninput="window.app.chat.filterInventoryTable(this.value)">`;
+        html += `</div>`;
+        html += `<div class="inventory-browse-table-wrapper">`;
+        html += `<table class="inventory-browse-table">`;
+        html += `<thead><tr>`;
+
+        const columns = [
+            { key: 'name', label: 'Name' },
+            { key: 'quantity', label: 'Qty' },
+            { key: 'unit', label: 'Unit' },
+            { key: 'location', label: 'Location' },
+            { key: 'notes', label: 'Notes' },
+            { key: 'minStock', label: 'Min Stock' }
+        ];
+
+        columns.forEach(col => {
+            html += `<th onclick="window.app.chat.sortInventoryTable('${col.key}')" data-col="${col.key}">${esc(col.label)} <span class="sort-indicator"></span></th>`;
+        });
+
+        html += `</tr></thead><tbody>`;
+
+        items.forEach(item => {
+            let rowClass = '';
+            let statusEmoji = '';
+            if (item.isCritical) {
+                rowClass = 'critical-stock';
+                statusEmoji = ' 🚨';
+            } else if (item.isLowStock) {
+                rowClass = 'low-stock';
+                statusEmoji = ' ⚠️';
+            }
+
+            html += `<tr class="${rowClass}">`;
+            html += `<td>${esc(item.name)}${statusEmoji}</td>`;
+            html += `<td>${esc(item.quantity)}</td>`;
+            html += `<td>${esc(item.unit)}</td>`;
+            html += `<td>${esc(item.location)}</td>`;
+            html += `<td>${esc(item.notes)}</td>`;
+            html += `<td>${esc(item.minStock)}</td>`;
+            html += `</tr>`;
+        });
+
+        html += `</tbody></table></div></div>`;
+        return html;
+    }
+
+    sortInventoryTable(column) {
+        if (!this._browseItems) return;
+
+        if (this._browseSortColumn === column) {
+            this._browseSortAsc = !this._browseSortAsc;
+        } else {
+            this._browseSortColumn = column;
+            this._browseSortAsc = true;
+        }
+
+        const numericCols = ['quantity', 'minStock'];
+        const isNumeric = numericCols.includes(column);
+
+        this._browseItems.sort((a, b) => {
+            let valA = a[column];
+            let valB = b[column];
+
+            if (isNumeric) {
+                valA = Number(valA) || 0;
+                valB = Number(valB) || 0;
+                return this._browseSortAsc ? valA - valB : valB - valA;
+            }
+
+            valA = String(valA || '').toLowerCase();
+            valB = String(valB || '').toLowerCase();
+            const cmp = valA.localeCompare(valB);
+            return this._browseSortAsc ? cmp : -cmp;
+        });
+
+        // Rebuild the table body
+        const table = document.querySelector('.inventory-browse-table');
+        if (!table) return;
+
+        const tbody = table.querySelector('tbody');
+        const newHtml = this.buildInventoryTable(this._browseItems, this._browseItems.length);
+
+        // Replace existing container content
+        const container = document.querySelector('.inventory-browse-container');
+        if (container) {
+            container.outerHTML = newHtml;
+        }
+
+        // Update sort indicators
+        setTimeout(() => {
+            const headers = document.querySelectorAll('.inventory-browse-table th');
+            headers.forEach(th => {
+                const indicator = th.querySelector('.sort-indicator');
+                if (indicator) {
+                    if (th.dataset.col === this._browseSortColumn) {
+                        indicator.textContent = this._browseSortAsc ? ' ▲' : ' ▼';
+                    } else {
+                        indicator.textContent = '';
+                    }
+                }
+            });
+        }, 0);
+    }
+
+    filterInventoryTable(query) {
+        const rows = document.querySelectorAll('.inventory-browse-table tbody tr');
+        const lowerQuery = query.toLowerCase();
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(lowerQuery) ? '' : 'none';
+        });
     }
 
     showTypingIndicator(show) {

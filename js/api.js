@@ -423,6 +423,15 @@ User: "schedule tomorrow" → Call open_tool with toolId='scheduler'`;
         }
     }
 
+    async browseInventory() {
+        try {
+            return await this.callGoogleScript('inventory', 'browseInventory', []);
+        } catch (error) {
+            console.error('Browse inventory failed:', error);
+            return { items: [], total: 0 };
+        }
+    }
+
     async updateInventory(updateData) {
         try {
             return await this.callGoogleScript('inventory', 'updateInventory', [updateData]);

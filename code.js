@@ -525,6 +525,10 @@ function doPost(e) {
         result = getArchivedProjects();
         break;
 
+      case 'browseInventory':
+        result = browseInventory();
+        break;
+
       default:
         throw new Error('Unknown function: ' + functionName);
     }
@@ -1783,6 +1787,45 @@ function checkLowStock() {
   } catch (error) {
     Logger.log("Error checking low stock: " + error.toString());
     return [];
+  }
+}
+
+// Browse all inventory items for table display
+function browseInventory() {
+  try {
+    const ss = SpreadsheetApp.openById(CONFIG.INVENTORY_SHEET_ID);
+    const sheet = ss.getSheetByName(CONFIG.INVENTORY_SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+
+    const items = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const name = data[i][0];
+      if (!name) continue;
+
+      const quantity = parseInt(data[i][1]) || 0;
+      const unit = data[i][2] || '';
+      const location = data[i][3] || '';
+      const notes = data[i][4] || '';
+      const minStock = parseInt(data[i][5]) || 10;
+
+      items.push({
+        name: name,
+        quantity: quantity,
+        unit: unit,
+        location: location,
+        notes: notes,
+        minStock: minStock,
+        isLowStock: quantity < minStock && quantity >= minStock * 0.5,
+        isCritical: quantity < minStock * 0.5
+      });
+    }
+
+    return { items: items, total: items.length };
+
+  } catch (error) {
+    Logger.log('Error browsing inventory: ' + error.toString());
+    return { items: [], total: 0 };
   }
 }
 

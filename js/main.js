@@ -678,6 +678,13 @@ Recommendations: ${report.recommendations.length}
         document.addEventListener('click', (e) => {
             if (e.target.closest('.quick-action')) {
                 const btn = e.target.closest('.quick-action');
+                const action = btn.dataset.action;
+                if (action === 'browse_inventory') {
+                    this.showChatInterface();
+                    this.chat.addMessage('Show me all inventory', 'user');
+                    this.chat.handleBrowseInventory();
+                    return;
+                }
                 const query = btn.dataset.query;
                 if (query) {
                     this.showChatInterface(); // Show chat if not already visible
