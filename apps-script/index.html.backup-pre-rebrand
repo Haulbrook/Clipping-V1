@@ -1,0 +1,1016 @@
+ 
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@300;400;600&display=swap');
+      
+      :root {
+        --cream: #FAF6F2;
+        --soft-white: #FEFDFB;
+        --warm-gray: #E8E2DB;
+        --taupe: #C4B5A0;
+        --deep-green: #2c5530;
+        --lavender: #9B8FB4;
+        --lavender-light: #B8AEC8;
+        --lavender-dark: #7B6B94;
+        --coral: #E4A982;
+        --shadow: rgba(155, 143, 180, 0.15);
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .banner-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://i.imgur.com/jUQwLtp.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.5; /* Adjust opacity so text is readable */
+  z-index: -1;
+}
+
+      
+      body { 
+        font-family: 'Source Sans Pro', sans-serif;
+        background: linear-gradient(135deg, var(--cream) 0%, var(--soft-white) 100%);
+        min-height: 100vh;
+        color: #3a3a3a;
+        position: relative;
+        overflow-x: hidden;
+      }
+      
+      /* Hydrangea decorative elements */
+      .hydrangea-bg {
+        position: fixed;
+        opacity: 0.06;
+        z-index: 0;
+        pointer-events: none;
+      }
+      
+      .hydrangea-1 {
+        top: -100px;
+        right: -150px;
+        width: 400px;
+        height: 400px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg fill='%239B8FB4'%3E%3Ccircle cx='200' cy='200' r='180' opacity='0.3'/%3E%3Ccircle cx='150' cy='150' r='40'/%3E%3Ccircle cx='250' cy='150' r='40'/%3E%3Ccircle cx='150' cy='250' r='40'/%3E%3Ccircle cx='250' cy='250' r='40'/%3E%3Ccircle cx='200' cy='120' r='35'/%3E%3Ccircle cx='200' cy='280' r='35'/%3E%3Ccircle cx='120' cy='200' r='35'/%3E%3Ccircle cx='280' cy='200' r='35'/%3E%3C/g%3E%3C/svg%3E") no-repeat center;
+        transform: rotate(15deg);
+      }
+      
+      .hydrangea-2 {
+        bottom: -120px;
+        left: -100px;
+        width: 350px;
+        height: 350px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg fill='%23B8AEC8'%3E%3Ccircle cx='200' cy='200' r='180' opacity='0.3'/%3E%3Ccircle cx='150' cy='150' r='40'/%3E%3Ccircle cx='250' cy='150' r='40'/%3E%3Ccircle cx='150' cy='250' r='40'/%3E%3Ccircle cx='250' cy='250' r='40'/%3E%3Ccircle cx='200' cy='120' r='35'/%3E%3Ccircle cx='200' cy='280' r='35'/%3E%3Ccircle cx='120' cy='200' r='35'/%3E%3Ccircle cx='280' cy='200' r='35'/%3E%3C/g%3E%3C/svg%3E") no-repeat center;
+        transform: rotate(-20deg);
+      }
+      
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        position: relative;
+        z-index: 1;
+      }
+      
+      /* Header styling */
+      .header {
+        text-align: center;
+        margin-bottom: 50px;
+        position: relative;
+      }
+      
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5em;
+        color: var(--deep-green);
+        margin-bottom: 10px;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+      }
+      
+      .tagline {
+        color: var(--lavender-dark);
+        font-weight: 300;
+        font-size: 1.2em;
+        letter-spacing: 1px;
+      }
+      
+      /* Decorative flower accent */
+      .flower-accent {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        margin: 0 10px;
+        vertical-align: middle;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cg fill='%239B8FB4'%3E%3Ccircle cx='25' cy='25' r='20' opacity='0.3'/%3E%3Ccircle cx='20' cy='20' r='6'/%3E%3Ccircle cx='30' cy='20' r='6'/%3E%3Ccircle cx='20' cy='30' r='6'/%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3C/g%3E%3C/svg%3E") no-repeat center;
+        background-size: contain;
+      }
+      
+      /* Tabs */
+      .tabs {
+        display: flex;
+        gap: 20px;
+        margin: 40px 0;
+        justify-content: center;
+      }
+      
+      .tab {
+        padding: 15px 35px;
+        cursor: pointer;
+        background: var(--soft-white);
+        border: 2px solid var(--warm-gray);
+        border-radius: 30px;
+        font-weight: 600;
+        color: var(--deep-green);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .tab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--shadow);
+      }
+      
+      .tab.active {
+        background: var(--lavender);
+        color: white;
+        border-color: var(--lavender);
+        box-shadow: 0 5px 20px var(--shadow);
+      }
+      
+      .tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        animation: shimmer 3s infinite;
+      }
+      
+      @keyframes shimmer {
+        0% { transform: translate(-50%, 50%) rotate(0deg); }
+        100% { transform: translate(-50%, 50%) rotate(360deg); }
+      }
+      
+      /* Content sections */
+      .tab-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+      }
+      
+      .tab-content.active {
+        display: block;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Card styling */
+      .content-card {
+        background: var(--soft-white);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px var(--shadow);
+        margin-bottom: 20px;
+        border: 1px solid var(--warm-gray);
+      }
+      
+      /* Search section */
+      .search-container {
+        position: relative;
+        margin: 30px 0;
+      }
+      
+      input[type="text"], input[type="number"], select {
+        width: 100%;
+        padding: 15px 20px;
+        font-size: 16px;
+        border: 2px solid var(--warm-gray);
+        border-radius: 15px;
+        background: var(--soft-white);
+        transition: all 0.3s ease;
+        font-family: 'Source Sans Pro', sans-serif;
+      }
+      
+      input[type="text"]:focus, input[type="number"]:focus, select:focus {
+        outline: none;
+        border-color: var(--lavender);
+        box-shadow: 0 0 0 3px rgba(155, 143, 180, 0.1);
+      }
+      
+      .search-wrapper {
+        position: relative;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      
+      .search-wrapper input {
+        flex: 1;
+      }
+      
+      button {
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Source Sans Pro', sans-serif;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+      
+      button:active::before {
+        width: 300px;
+        height: 300px;
+      }
+      
+      button:not(.danger-button) {
+        background: linear-gradient(135deg, var(--lavender) 0%, var(--lavender-dark) 100%);
+        color: white;
+      }
+      
+      button:not(.danger-button):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px var(--shadow);
+      }
+      
+      button:disabled {
+        background: var(--warm-gray);
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      .danger-button {
+        background: linear-gradient(135deg, #E4A982 0%, #D08B5B 100%);
+        color: white;
+      }
+      
+      .danger-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(228, 169, 130, 0.3);
+      }
+      
+      /* Results section */
+      #result, #updateResult {
+        margin-top: 30px;
+      }
+      
+      .inventory-item {
+        background: linear-gradient(135deg, var(--soft-white) 0%, #FFFFFF 100%);
+        border: 1px solid var(--warm-gray);
+        border-left: 4px solid var(--lavender);
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+      }
+      
+      .inventory-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 20px var(--shadow);
+      }
+      
+      .inventory-item strong {
+        color: var(--deep-green);
+        font-size: 1.2em;
+        font-family: 'Playfair Display', serif;
+      }
+      
+      .item-details {
+        margin-top: 10px;
+        color: #666;
+        font-size: 0.95em;
+      }
+      
+      .item-details span {
+        display: inline-block;
+        margin-right: 25px;
+        padding: 5px 10px;
+        background: var(--cream);
+        border-radius: 20px;
+        margin-top: 5px;
+      }
+      
+      /* Action cards */
+      .update-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+      }
+      
+      .action-card {
+        background: var(--soft-white);
+        border: 2px solid var(--warm-gray);
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--lavender);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .action-card:hover::before {
+        transform: translateX(0);
+      }
+      
+      .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px var(--shadow);
+      }
+      
+      .action-card.selected {
+        background: var(--lavender);
+        color: white;
+        border-color: var(--lavender);
+      }
+      
+      .action-card h3 {
+        font-family: 'Playfair Display', serif;
+        margin: 0 0 10px 0;
+        font-size: 1.4em;
+      }
+      
+      .action-card p {
+        margin: 0;
+        opacity: 0.8;
+      }
+      
+      /* Form styling */
+      .form-group {
+        margin: 20px 0;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--deep-green);
+        font-size: 0.95em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Status messages */
+      .loading {
+        text-align: center;
+        color: var(--lavender-dark);
+        font-style: italic;
+        padding: 20px;
+      }
+      
+      .error {
+        color: #D08B5B;
+        background: #FFF5F0;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border-left: 4px solid #E4A982;
+      }
+      
+      .success {
+        color: var(--deep-green);
+        background: #F0FAF0;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border-left: 4px solid var(--deep-green);
+      }
+      
+      .source-info {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--warm-gray);
+        font-size: 0.85em;
+        color: #888;
+        font-style: italic;
+      }
+      
+      /* Responsive design */
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2.5em;
+        }
+        
+        .tabs {
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .tab {
+          width: 100%;
+          text-align: center;
+        }
+        
+        .search-wrapper {
+          flex-direction: column;
+        }
+        
+        .search-wrapper input {
+          width: 100%;
+        }
+        
+        button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner-background"></div>
+
+    <!-- Decorative hydrangea backgrounds -->
+    <div class="hydrangea-bg hydrangea-1"></div>
+    <div class="hydrangea-bg hydrangea-2"></div>
+    
+    <div class="container">
+      <div class="header">
+        <h1>
+          <span class="flower-accent"></span>
+          Clippings
+          <span class="flower-accent"></span>
+        </h1>
+        <p class="tagline">Inventory Assistant for Deep Roots Landscape</p>
+      </div>
+      
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('search')">Search Inventory</div>
+        <div class="tab" onclick="switchTab('update')">Update Inventory</div>
+        <div class="tab" onclick="switchTab('batch')">Batch Import</div>
+        <div class="tab" onclick="switchTab('duplicates')">Find Duplicates</div>
+      </div>
+      
+      <!-- Search Tab -->
+      <div id="searchTab" class="tab-content active">
+        <div class="content-card">
+          <p style="text-align: center; color: var(--lavender-dark); margin-bottom: 20px;">
+            Ask about inventory items, quantities, locations, or general landscaping questions
+          </p>
+          <div class="search-container">
+            <div class="search-wrapper">
+              <input 
+                type="text" 
+                id="query" 
+                placeholder="Try: 'Do we have hydrangeas?' or 'Where is the fertilizer?'" 
+                onkeypress="if(event.key === 'Enter') search()"
+              />
+              <button id="searchBtn" onclick="search()">Search</button>
+            </div>
+          </div>
+        </div>
+        <div id="result"></div>
+      </div>
+      
+      <!-- Update Tab -->
+      <div id="updateTab" class="tab-content">
+        <div class="content-card">
+          <p style="text-align: center; color: var(--lavender-dark); margin-bottom: 20px;">
+            Add new deliveries, subtract sold items, or update inventory details
+          </p>
+          
+          <div class="update-actions">
+            <div class="action-card add" onclick="setAction('add')">
+              <h3>➕ Add Stock</h3>
+              <p>New delivery or purchase</p>
+            </div>
+            <div class="action-card remove" onclick="setAction('subtract')">
+              <h3>➖ Remove Stock</h3>
+              <p>Sold or died</p>
+            </div>
+            <div class="action-card update" onclick="setAction('update')">
+              <h3>✏️ Update Info</h3>
+              <p>Change location/notes</p>
+            </div>
+          </div>
+        </div>
+        
+        <div id="updateForm" style="display: none;">
+          <div class="content-card">
+            <div class="form-group">
+              <label for="itemName">Item Name</label>
+              <input type="text" id="itemName" placeholder="e.g., Hydrangea - Endless Summer" />
+            </div>
+            
+            <div class="form-group" id="quantityGroup">
+              <label for="quantity">Quantity</label>
+              <div style="display: flex; gap: 15px;">
+                <input type="number" id="quantity" min="1" value="1" style="width: 120px;" />
+                <select id="unit" style="flex: 1;">
+                  <option value="">Select unit...</option>
+                  <option value="plants">plants</option>
+                  <option value="flats">flats</option>
+                  <option value="bags">bags</option>
+                  <option value="yards">yards</option>
+                  <option value="gallons">gallons</option>
+                  <option value="pounds">pounds</option>
+                  <option value="each">each</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group" id="minStockGroup" style="display: none;">
+              <label for="minStock">Minimum Stock Level</label>
+              <input type="number" id="minStock" min="0" value="10" placeholder="Alert when stock falls below this" />
+            </div>
+            
+            <div class="form-group" id="locationGroup" style="display: none;">
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="e.g., Greenhouse A, Shed B" />
+            </div>
+            
+            <div class="form-group" id="notesGroup" style="display: none;">
+              <label for="notes">Notes</label>
+              <input type="text" id="notes" placeholder="e.g., Premium grade, Shade tolerant" />
+            </div>
+            
+            <div class="form-group" id="reasonGroup" style="display: none;">
+              <label for="reason">Reason for removal</label>
+              <select id="reason">
+                <option value="sold">Sold</option>
+                <option value="died">Died/Damaged</option>
+                <option value="transferred">Transferred</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <button onclick="executeUpdate()" id="executeBtn">Update Inventory</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="updateResult"></div>
+      </div>
+    </div>
+    <div id="updateResult"></div>
+      </div>
+      
+      <!-- Batch Import Tab -->
+      <div id="batchTab" class="tab-content">
+        <div class="content-card">
+          <h3 style="color: var(--lavender-dark); font-family: 'Playfair Display', serif; margin-bottom: 20px;">
+            Batch Import Multiple Items
+          </h3>
+          <p style="color: #666; margin-bottom: 20px;">
+            Import multiple plants at once. Format: Item Name, Quantity, Unit, Location, Notes, Min Stock<br>
+            <em>Example: Hydrangea - Endless Summer, 25, plants, Greenhouse A, Premium, 10</em>
+          </p>
+          
+          <div class="form-group">
+            <label for="batchData">Import Data (one item per line)</label>
+            <textarea 
+              id="batchData" 
+              rows="10" 
+              style="width: 100%; padding: 15px; font-family: monospace; font-size: 14px; border: 2px solid var(--warm-gray); border-radius: 15px; background: var(--soft-white);"
+              placeholder="Hydrangea - Endless Summer, 25, plants, Greenhouse A, Premium, 10
+Hydrangea - Limelight, 15, plants, Greenhouse A, Full sun, 10
+Boxwood - Green Velvet, 40, plants, Shed B, Evergreen, 20
+Hosta - Sum and Substance, 30, plants, Shade House, Large variety, 15"></textarea>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <button onclick="performBatchImport()">Import All Items</button>
+          </div>
+        </div>
+        
+        <div id="batchResult"></div>
+      </div>
+      
+      <!-- Duplicate Detection Tab -->
+      <div id="duplicatesTab" class="tab-content">
+        <div class="content-card">
+          <h3 style="color: var(--lavender-dark); font-family: 'Playfair Display', serif; margin-bottom: 20px;">
+            Find & Fix Duplicate Items
+          </h3>
+          <p style="color: #666; margin-bottom: 20px;">
+            Scan inventory for potential duplicates and typos. Helps maintain clean, organized data.
+          </p>
+          
+          <div style="text-align: center;">
+            <button onclick="scanForDuplicates()">Scan for Duplicates</button>
+          </div>
+        </div>
+        
+        <div id="duplicatesResult"></div>
+      </div>
+
+     
+
+    <script>
+      let currentAction = '';
+      
+      function switchTab(tab) {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        const tabIndex = {'search': 0, 'update': 1, 'batch': 2, 'duplicates': 3}[tab];
+        tabs[tabIndex].classList.add('active');
+        document.getElementById(tab + 'Tab').classList.add('active');
+      }
+      
+      function setAction(action) {
+        currentAction = action;
+        
+        // Update selected card
+        document.querySelectorAll('.action-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+        
+        // Show form
+        document.getElementById('updateForm').style.display = 'block';
+        
+        // Reset form
+        document.getElementById('itemName').value = '';
+        document.getElementById('quantity').value = '1';
+        document.getElementById('unit').value = '';
+        document.getElementById('location').value = '';
+        document.getElementById('notes').value = '';
+        
+        // Show/hide relevant fields
+        const quantityGroup = document.getElementById('quantityGroup');
+        const minStockGroup = document.getElementById('minStockGroup');
+        const locationGroup = document.getElementById('locationGroup');
+        const notesGroup = document.getElementById('notesGroup');
+        const reasonGroup = document.getElementById('reasonGroup');
+        const executeBtn = document.getElementById('executeBtn');
+        
+        if (action === 'add') {
+          quantityGroup.style.display = 'block';
+          minStockGroup.style.display = 'block';
+          locationGroup.style.display = 'block';
+          notesGroup.style.display = 'block';
+          reasonGroup.style.display = 'none';
+          executeBtn.textContent = 'Add to Inventory';
+          executeBtn.className = '';
+        } else if (action === 'subtract') {
+          quantityGroup.style.display = 'block';
+          minStockGroup.style.display = 'none';
+          locationGroup.style.display = 'none';
+          notesGroup.style.display = 'none';
+          reasonGroup.style.display = 'block';
+          executeBtn.textContent = 'Remove from Inventory';
+          executeBtn.className = 'danger-button';
+        } else if (action === 'update') {
+          quantityGroup.style.display = 'none';
+          minStockGroup.style.display = 'block';
+          locationGroup.style.display = 'block';
+          notesGroup.style.display = 'block';
+          reasonGroup.style.display = 'none';
+          executeBtn.textContent = 'Update Item Info';
+          executeBtn.className = '';
+        }
+      }
+      
+      function executeUpdate() {
+        const itemName = document.getElementById('itemName').value.trim();
+        const quantity = document.getElementById('quantity').value;
+        const unit = document.getElementById('unit').value;
+        const location = document.getElementById('location').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+        const reason = document.getElementById('reason').value;
+        
+        if (!itemName) {
+          document.getElementById('updateResult').innerHTML = 
+            '<div class="error">Please enter an item name.</div>';
+          return;
+        }
+        
+        if ((currentAction === 'add' || currentAction === 'subtract') && !unit) {
+          document.getElementById('updateResult').innerHTML = 
+            '<div class="error">Please select a unit.</div>';
+          return;
+        }
+        
+        // Show loading
+        document.getElementById('updateResult').innerHTML = 
+          '<div class="loading">🌸 Updating inventory...</div>';
+        document.getElementById('executeBtn').disabled = true;
+        
+        // Prepare update data
+        const updateData = {
+          action: currentAction,
+          itemName: itemName,
+          quantity: parseInt(quantity),
+          unit: unit,
+          location: location,
+          notes: notes,
+          reason: reason,
+          minStock: parseInt(document.getElementById('minStock').value) || 10
+        };
+        
+        // Call backend
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              document.getElementById('updateResult').innerHTML = 
+                `<div class="success">${response.message}</div>`;
+              // Clear form
+              document.getElementById('itemName').value = '';
+              document.getElementById('quantity').value = '1';
+              document.getElementById('unit').value = '';
+              document.getElementById('location').value = '';
+              document.getElementById('notes').value = '';
+            } else {
+              document.getElementById('updateResult').innerHTML = 
+                `<div class="error">${response.message}</div>`;
+            }
+            document.getElementById('executeBtn').disabled = false;
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById('updateResult').innerHTML = 
+              `<div class="error">Error: ${error.message || 'Something went wrong.'}</div>`;
+            document.getElementById('executeBtn').disabled = false;
+          })
+          .updateInventory(updateData);
+      }
+      
+      function search() {
+        const query = document.getElementById("query").value.trim();
+        const resultDiv = document.getElementById("result");
+        const searchBtn = document.getElementById("searchBtn");
+        
+        // Validate input
+        if (!query) {
+          resultDiv.innerHTML = '<div class="content-card"><div class="error">Please enter a search term.</div></div>';
+          return;
+        }
+        
+        // Show loading state
+        resultDiv.innerHTML = '<div class="content-card"><div class="loading">🌸 Searching through the garden...</div></div>';
+        searchBtn.disabled = true;
+        searchBtn.textContent = "Searching...";
+        
+        // Call the backend
+        google.script.run
+          .withSuccessHandler(function(response) {
+            displayResults(response);
+            searchBtn.disabled = false;
+            searchBtn.textContent = "Search";
+          })
+          .withFailureHandler(function(error) {
+            resultDiv.innerHTML = `<div class="content-card"><div class="error">❌ Error: ${error.message || 'Something went wrong. Please try again.'}</div></div>`;
+            searchBtn.disabled = false;
+            searchBtn.textContent = "Search";
+          })
+          .askInventory(query);
+      }
+      
+      function displayResults(response) {
+        const resultDiv = document.getElementById("result");
+        
+        if (!response || !response.answer) {
+          resultDiv.innerHTML = '<div class="content-card"><div class="no-results">No results found. Please try a different search.</div></div>';
+          return;
+        }
+        
+        // Parse the response to format inventory items nicely
+        if (response.source === 'inventory') {
+          // Format inventory response
+          const lines = response.answer.split('\n').filter(line => line.trim());
+          let html = '<div class="content-card"><h3 style="color: var(--lavender-dark); font-family: \'Playfair Display\', serif;">📦 Inventory Results</h3></div>';
+          
+          lines.forEach(line => {
+            if (line.includes('Quantity:')) {
+              // Parse inventory line
+              const itemMatch = line.match(/[•⚠️]\s*(.+?):\s*Quantity:\s*(\d+)\s*(\w+)/);
+              const locationMatch = line.match(/Location:\s*([^•]+)/);
+              const notesMatch = line.match(/Notes:\s*(.+)/);
+              const lowStockMatch = line.includes('⚠️');
+              
+              if (itemMatch) {
+                html += '<div class="inventory-item">';
+                if (lowStockMatch) {
+                  html += `<strong>⚠️ ${itemMatch[1]}</strong>`;
+                } else {
+                  html += `<strong>${itemMatch[1]}</strong>`;
+                }
+                html += '<div class="item-details">';
+                html += `<span>📊 Quantity: ${itemMatch[2]} ${itemMatch[3]}</span>`;
+                if (locationMatch) {
+                  html += `<span>📍 ${locationMatch[1].trim()}</span>`;
+                }
+                if (notesMatch) {
+                  html += `<br><span>📝 ${notesMatch[1]}</span>`;
+                }
+                html += '</div></div>';
+              }
+            }
+          });
+          
+          if (!html.includes('inventory-item')) {
+            // Fallback for different format
+            html = `<div class="content-card">${response.answer}</div>`;
+          }
+          
+          html += '<div class="source-info">Source: Inventory Database</div>';
+          resultDiv.innerHTML = html;
+        } else {
+          // Knowledge base or AI response
+          let html = '<div class="content-card"><div style="white-space: pre-wrap;">' + response.answer + '</div>';
+          html += `<div class="source-info">Source: ${response.source === 'knowledge' ? 'Knowledge Base' : 'AI Assistant'}</div></div>`;
+          resultDiv.innerHTML = html;
+        }
+      }
+      
+      // Focus on search input when page loads
+      window.onload = function() {
+        document.getElementById("query").focus();
+      };
+      
+      // Batch import function
+      function performBatchImport() {
+        const batchData = document.getElementById('batchData').value.trim();
+        const resultDiv = document.getElementById('batchResult');
+        
+        if (!batchData) {
+          resultDiv.innerHTML = '<div class="content-card"><div class="error">Please enter items to import.</div></div>';
+          return;
+        }
+        
+        // Show loading
+        resultDiv.innerHTML = '<div class="content-card"><div class="loading">🌸 Importing items...</div></div>';
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              let html = '<div class="content-card">';
+              html += `<div class="success">${response.summary}</div>`;
+              
+              if (response.results && response.results.length > 0) {
+                html += '<div style="margin-top: 20px;">';
+                html += '<h4>Import Details:</h4>';
+                
+                response.results.forEach(result => {
+                  if (result.success) {
+                    html += `<div style="color: var(--deep-green); margin: 5px 0;">✓ ${result.message}</div>`;
+                  } else {
+                    html += `<div style="color: #D08B5B; margin: 5px 0;">✗ ${result.line} - ${result.message}</div>`;
+                  }
+                });
+                html += '</div>';
+              }
+              
+              html += '</div>';
+              resultDiv.innerHTML = html;
+              
+              // Clear the textarea if all successful
+              if (response.results.every(r => r.success)) {
+                document.getElementById('batchData').value = '';
+              }
+            } else {
+              resultDiv.innerHTML = `<div class="content-card"><div class="error">${response.message}</div></div>`;
+            }
+          })
+          .withFailureHandler(function(error) {
+            resultDiv.innerHTML = `<div class="content-card"><div class="error">Error: ${error.message || 'Import failed.'}</div></div>`;
+          })
+          .batchImportItems(batchData);
+      }
+      
+      // Duplicate detection function
+      function scanForDuplicates() {
+        const resultDiv = document.getElementById('duplicatesResult');
+        
+        // Show loading
+        resultDiv.innerHTML = '<div class="content-card"><div class="loading">🔍 Scanning for duplicates...</div></div>';
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              if (response.duplicates && response.duplicates.length > 0) {
+                let html = '<div class="content-card">';
+                html += `<h4>Found ${response.duplicates.length} potential duplicate${response.duplicates.length > 1 ? 's' : ''}:</h4>`;
+                html += '</div>';
+                
+                response.duplicates.forEach((dup, index) => {
+                  html += `
+                    <div class="content-card" style="border-left: 4px solid var(--coral);">
+                      <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 300px;">
+                          <h4 style="color: var(--lavender-dark); margin-bottom: 10px;">${dup.similarity}% Similar</h4>
+                          <div style="margin-bottom: 10px;">
+                            <strong>1:</strong> ${dup.item1.name}<br>
+                            <span style="color: #666; font-size: 0.9em;">
+                              ${dup.item1.quantity} ${dup.item1.unit} @ ${dup.item1.location} (Row ${dup.item1.row})
+                            </span>
+                          </div>
+                          <div>
+                            <strong>2:</strong> ${dup.item2.name}<br>
+                            <span style="color: #666; font-size: 0.9em;">
+                              ${dup.item2.quantity} ${dup.item2.unit} @ ${dup.item2.location} (Row ${dup.item2.row})
+                            </span>
+                          </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                          <button onclick="mergeDuplicateItems('${dup.item1.name}', '${dup.item2.name}', true, ${index})">
+                            Keep First
+                          </button>
+                          <button onclick="mergeDuplicateItems('${dup.item1.name}', '${dup.item2.name}', false, ${index})">
+                            Keep Second
+                          </button>
+                          <button class="danger-button" onclick="ignoreDuplicate(${index})">
+                            Keep Both
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                });
+                
+                resultDiv.innerHTML = html;
+              } else {
+                resultDiv.innerHTML = '<div class="content-card"><div class="success">✓ No duplicates found! Your inventory is clean.</div></div>';
+              }
+            } else {
+              resultDiv.innerHTML = `<div class="content-card"><div class="error">${response.message}</div></div>`;
+            }
+          })
+          .withFailureHandler(function(error) {
+            resultDiv.innerHTML = `<div class="content-card"><div class="error">Error: ${error.message || 'Scan failed.'}</div></div>`;
+          })
+          .findDuplicates();
+      }
+      
+      // Merge duplicate items
+      function mergeDuplicateItems(item1, item2, keepFirst, index) {
+        const button = event.target;
+        button.disabled = true;
+        button.textContent = 'Merging...';
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+            if (response.success) {
+              // Hide this duplicate card
+              button.closest('.content-card').style.display = 'none';
+              
+              // Show success message
+              const successDiv = document.createElement('div');
+              successDiv.className = 'content-card';
+              successDiv.innerHTML = `<div class="success">${response.message}</div>`;
+              button.closest('.content-card').parentNode.insertBefore(successDiv, button.closest('.content-card'));
+            } else {
+              alert('Error: ' + response.message);
+              button.disabled = false;
+              button.textContent = keepFirst ? 'Keep First' : 'Keep Second';
+            }
+          })
+          .withFailureHandler(function(error) {
+            alert('Error: ' + (error.message || 'Merge failed.'));
+            button.disabled = false;
+            button.textContent = keepFirst ? 'Keep First' : 'Keep Second';
+          })
+          .mergeDuplicates(item1, item2, keepFirst);
+      }
+      
+      // Ignore duplicate (keep both)
+      function ignoreDuplicate(index) {
+        event.target.closest('.content-card').style.display = 'none';
+      }
+    </script>
+  </body>
