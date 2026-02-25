@@ -392,45 +392,10 @@ function addMinStockColumn() {
 // =============================
 // 🌐 Entry Point: Web App
 // =============================
-function doGet(e) {
-  // This is the backend API - the dashboard is deployed separately to GitHub Pages
-  // If someone visits this URL directly, show them a helpful message
-
-  var html = '<html><head><style>' +
-    'body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }' +
-    'h1 { color: #4CAF50; }' +
-    'code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }' +
-    '.status { color: #4CAF50; font-weight: bold; }' +
-    '.section { background: #f9f9f9; padding: 15px; margin: 20px 0; border-radius: 5px; }' +
-    '</style></head><body>' +
-    '<h1>🌱 Deep Roots Inventory Backend API</h1>' +
-    '<p class="status">✅ Backend is running!</p>' +
-    '<div class="section">' +
-    '<h2>📋 This is the backend API</h2>' +
-    '<p>This Google Apps Script handles inventory data, fleet tracking, and operational queries.</p>' +
-    '<p><strong>Frontend Dashboard:</strong> Deploy the dashboard files to GitHub Pages or Netlify</p>' +
-    '<p><strong>Configuration:</strong> Update <code>config.json</code> with this URL:</p>' +
-    '<code>' + ScriptApp.getService().getUrl() + '</code>' +
-    '</div>' +
-    '<div class="section">' +
-    '<h2>🧪 Test the API</h2>' +
-    '<p>Send a POST request to this URL with JSON body:</p>' +
-    '<pre>{\n  "function": "getInventoryReport",\n  "parameters": []\n}</pre>' +
-    '</div>' +
-    '<div class="section">' +
-    '<h2>📖 Available Functions</h2>' +
-    '<ul>' +
-    '<li><code>askInventory</code> - Search inventory</li>' +
-    '<li><code>getInventoryReport</code> - Get full inventory report</li>' +
-    '<li><code>getFleetReport</code> - Get truck fleet status</li>' +
-    '<li><code>checkLowStock</code> - Check items low on stock</li>' +
-    '<li><code>updateInventory</code> - Update inventory quantities</li>' +
-    '</ul>' +
-    '</div>' +
-    '</body></html>';
-
-  return HtmlService.createHtmlOutput(html)
-    .setTitle("Deep Roots Inventory Backend API");
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile("index")
+    .setTitle("Deep Roots Inventory & Fleet Assistant")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 // =============================
