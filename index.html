@@ -306,47 +306,12 @@
                 <button class="modal-close" aria-label="Close settings">×</button>
             </div>
             <div class="modal-body">
-                <div class="setting-group">
-                    <h3>Tool Configuration</h3>
-                    <div class="setting-item">
-                        <label for="inventoryUrl">Inventory Tool URL:</label>
-                        <input type="url" id="inventoryUrl" placeholder="https://script.google.com/...">
-                    </div>
-                    <div class="setting-item">
-                        <label for="gradingUrl">Grading Tool URL:</label>
-                        <input type="url" id="gradingUrl" placeholder="https://script.google.com/...">
-                    </div>
-                    <div class="setting-item">
-                        <label for="schedulerUrl">Scheduler Tool URL:</label>
-                        <input type="url" id="schedulerUrl" placeholder="https://script.google.com/...">
-                    </div>
-                    <div class="setting-item">
-                        <label for="toolsUrl">Tools Checkout URL:</label>
-                        <input type="url" id="toolsUrl" placeholder="https://script.google.com/...">
-                    </div>
-                    <div class="setting-item">
-                        <label for="chessmapUrl">DRL Chess Map URL:</label>
-                        <input type="url" id="chessmapUrl" placeholder="https://dailychessmap.netlify.app/">
-                    </div>
-                </div>
+                <!-- Tool URLs are hardcoded in config.json -->
                 <div class="setting-group">
                     <h3>Appearance</h3>
                     <div class="setting-item">
                         <label for="darkMode">Dark Mode:</label>
                         <input type="checkbox" id="darkMode">
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <h3>AI Configuration</h3>
-                    <div class="setting-item">
-                        <label for="openaiApiKey">🤖 OpenAI API Key:</label>
-                        <input type="password" id="openaiApiKey" placeholder="sk-..." autocomplete="off">
-                        <p style="font-size: 12px; color: var(--text-secondary, #666); margin-top: 5px;">
-                            Enable intelligent AI chat responses. Get your key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com/api-keys</a>
-                        </p>
-                        <div class="security-notice" style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 8px; margin-top: 8px; font-size: 12px;">
-                            <strong>⚠️ Security Notice:</strong> API keys stored in browser localStorage may be visible to browser extensions or scripts. For production use, consider implementing server-side API key management. Use a key with limited permissions and set spending limits in your OpenAI dashboard.
-                        </div>
                     </div>
                 </div>
                 <div class="setting-group">

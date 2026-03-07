@@ -53,19 +53,7 @@ class ConfigManager {
                 this.config = this.mergeConfigs(this.config, settings);
             }
 
-            // Load individual tool URLs
-            const toolUrls = {
-                inventory: localStorage.getItem('inventoryUrl'),
-                grading: localStorage.getItem('gradingUrl'),
-                scheduler: localStorage.getItem('schedulerUrl'),
-                tools: localStorage.getItem('toolsUrl')
-            };
-
-            Object.entries(toolUrls).forEach(([key, url]) => {
-                if (url && this.config.services[key]) {
-                    this.config.services[key].url = url;
-                }
-            });
+            // Tool URLs are hardcoded in config.json - no localStorage overrides
         } catch (error) {
             console.warn('Error loading local settings:', error);
         }

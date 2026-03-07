@@ -152,18 +152,6 @@ class ChatManager {
     async processMessage(message) {
         let response = { content: '', type: 'general' };
 
-        // Try OpenAI first if API key is configured
-        const hasOpenAI = localStorage.getItem('openaiApiKey');
-        if (hasOpenAI) {
-            try {
-                const result = await this.processWithOpenAI(message);
-                return result;
-            } catch (error) {
-                console.error('OpenAI processing failed, falling back to keyword matching:', error);
-                // Fall through to keyword matching below
-            }
-        }
-
         try {
             // Step 2: Check if query is complex and apply Deconstruction & Rebuild skill
             if (this.deconstructionSkill) {
@@ -179,11 +167,6 @@ class ChatManager {
                         response.type = 'deconstruction';
                         response.deconstructionData = deconstructed;
 
-                        // Complete operation successfully
-                        if (this.appleOverseer && operationId) {
-                            this.appleOverseer.completeOperation(operationId, { success: true, data: deconstructed });
-                        }
-
                         return response;
                     }
                 }
@@ -191,9 +174,6 @@ class ChatManager {
 
             // Step 3: Determine which tool this message is most relevant to
             const toolRoute = this.determineToolRoute(message);
-
-            // Note: Tool validation with Apple Overseer disabled to prevent operation buildup
-            // OpenAI handles tool routing more intelligently anyway
 
             // Step 5: Apply Forward Thinker skill to predict next steps
             let forwardThinking = null;
@@ -223,28 +203,9 @@ class ChatManager {
                 response.forwardThinking = forwardThinking.predictions;
             }
 
-            // Complete operations successfully
-            if (this.appleOverseer) {
-                if (operationId) {
-                    this.appleOverseer.completeOperation(operationId, { success: true, data: response });
-                }
-                if (response.toolOperationId) {
-                    this.appleOverseer.completeOperation(response.toolOperationId, { success: true, data: response });
-                }
-            }
-
             return response;
 
         } catch (error) {
-            // Complete operations with error
-            if (this.appleOverseer) {
-                if (operationId) {
-                    this.appleOverseer.completeOperation(operationId, { success: false, errors: [error.message] });
-                }
-                if (response.toolOperationId) {
-                    this.appleOverseer.completeOperation(response.toolOperationId, { success: false, errors: [error.message] });
-                }
-            }
             throw error;
         }
     }
@@ -322,83 +283,6 @@ class ChatManager {
         }
 
         return response;
-    }
-
-    /**
-     * Process message using OpenAI
-     */
-    async processWithOpenAI(message) {
-        const api = window.app?.api;
-        if (!api) {
-            throw new Error('API manager not available');
-        }
-
-        // Build context for OpenAI
-        const context = {
-            history: this.messageHistory.slice(-10).map(m => ({
-                role: m.sender === 'user' ? 'user' : 'assistant',
-                content: m.content
-            })),
-            tools: this.getAvailableTools(),
-            currentTime: new Date().toISOString()
-        };
-
-        // Call OpenAI
-        const aiResponse = await api.callOpenAI(message, context);
-
-        // Handle function calls
-        if (aiResponse.type === 'function_call') {
-            return await this.handleOpenAIFunctionCall(aiResponse);
-        }
-
-        // Regular message response
-        return {
-            content: aiResponse.content,
-            type: 'ai_response',
-            usage: aiResponse.usage
-        };
-    }
-
-    /**
-     * Handle OpenAI function calls
-     */
-    async handleOpenAIFunctionCall(aiResponse) {
-        const { function: functionName, arguments: args } = aiResponse;
-
-        let result = '';
-        let toolId = null;
-        let shouldOpenTool = false;
-
-        switch (functionName) {
-            case 'open_tool':
-                toolId = args.toolId;
-                shouldOpenTool = true;
-                result = `Opening ${this.getToolName(toolId)}...`;
-                break;
-
-            case 'search_inventory':
-                result = `Searching for "${args.query}"...`;
-                toolId = 'inventory';
-                shouldOpenTool = true;
-                break;
-
-            case 'check_crew_location':
-                result = `Finding crew near "${args.query}"...`;
-                toolId = 'chessmap';
-                shouldOpenTool = true;
-                break;
-
-            default:
-                result = `Executing ${functionName}...`;
-        }
-
-        return {
-            content: result,
-            type: 'function_result',
-            toolId,
-            shouldOpenTool,
-            toolName: this.getToolName(toolId)
-        };
     }
 
     /**

@@ -54,14 +54,6 @@ class SetupWizard {
                 description: 'Configure AI capabilities for advanced reasoning and analysis.',
                 fields: [
                     {
-                        name: 'openaiApiKey',
-                        label: 'OpenAI API Key (Optional)',
-                        type: 'password',
-                        placeholder: 'sk-...',
-                        required: false,
-                        helpText: 'For enhanced AI capabilities in deconstruction and forward thinking'
-                    },
-                    {
                         name: 'enableDeconstructionSkill',
                         label: 'Enable Deconstruction & Rebuild Skill',
                         type: 'checkbox',

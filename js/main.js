@@ -502,14 +502,18 @@ Recommendations: ${report.recommendations.length}
             const response = await fetch('config.json');
             this.config = await response.json();
             
-            // Merge with localStorage settings
+            // Load non-URL preferences from localStorage (dark mode, skill toggles)
             const savedSettings = localStorage.getItem('dashboardSettings');
             if (savedSettings) {
                 const settings = JSON.parse(savedSettings);
-                this.config = { ...this.config, ...settings };
+                // Only merge non-service settings - URLs come from config.json
+                if (settings.darkMode !== undefined) this.config.darkMode = settings.darkMode;
+                if (settings.enableAppleOverseer !== undefined) this.config.enableAppleOverseer = settings.enableAppleOverseer;
+                if (settings.enableDeconstructionSkill !== undefined) this.config.enableDeconstructionSkill = settings.enableDeconstructionSkill;
+                if (settings.enableForwardThinkerSkill !== undefined) this.config.enableForwardThinkerSkill = settings.enableForwardThinkerSkill;
             }
-            
-            // Update tool URLs from settings
+
+            // Clean up any stale localStorage URL overrides
             this.updateToolURLs();
             
         } catch (error) {
@@ -519,21 +523,10 @@ Recommendations: ${report.recommendations.length}
     }
 
     updateToolURLs() {
-        // For each service, use localStorage URL if available, otherwise use config.json URL
+        // config.json is the single source of truth for tool URLs
+        // Clear any stale localStorage URL overrides
         Object.keys(this.config.services).forEach(key => {
-            const localStorageKey = `${key}Url`;
-            const savedUrl = localStorage.getItem(localStorageKey);
-            const configUrl = this.config.services[key]?.url;
-
-            if (savedUrl) {
-                // Use saved URL from localStorage
-                this.config.services[key].url = savedUrl;
-            } else if (configUrl) {
-                // No saved URL, use config.json URL and save it to localStorage
-                this.config.services[key].url = configUrl;
-                localStorage.setItem(localStorageKey, configUrl);
-                console.log(`✅ Initialized ${key}Url from config.json:`, configUrl.substring(0, 50) + '...');
-            }
+            localStorage.removeItem(`${key}Url`);
         });
     }
 
@@ -942,34 +935,16 @@ Recommendations: ${report.recommendations.length}
     }
 
     async saveSettings() {
+        // Tool URLs are hardcoded in config.json - only save non-URL settings
         const settings = {
-            services: {
-                inventory: { url: document.getElementById('inventoryUrl').value },
-                grading: { url: document.getElementById('gradingUrl').value },
-                scheduler: { url: document.getElementById('schedulerUrl').value },
-                tools: { url: document.getElementById('toolsUrl').value },
-                chessmap: { url: document.getElementById('chessmapUrl').value }
-            },
             darkMode: document.getElementById('darkMode').checked,
             enableAppleOverseer: document.getElementById('enableAppleOverseer')?.checked ?? true,
             enableDeconstructionSkill: document.getElementById('enableDeconstructionSkill')?.checked ?? true,
             enableForwardThinkerSkill: document.getElementById('enableForwardThinkerSkill')?.checked ?? true
         };
 
-        // Save OpenAI API Key separately (more secure)
-        const openaiApiKey = document.getElementById('openaiApiKey');
-        if (openaiApiKey && openaiApiKey.value && openaiApiKey.value.trim() !== '') {
-            localStorage.setItem('openaiApiKey', openaiApiKey.value.trim());
-            console.log('✅ OpenAI API key saved');
-        }
-
-        // Save to localStorage
+        // Save to localStorage (URLs are hardcoded in config.json, not saved here)
         localStorage.setItem('dashboardSettings', JSON.stringify(settings));
-        localStorage.setItem('inventoryUrl', settings.services.inventory.url);
-        localStorage.setItem('gradingUrl', settings.services.grading.url);
-        localStorage.setItem('schedulerUrl', settings.services.scheduler.url);
-        localStorage.setItem('toolsUrl', settings.services.tools.url);
-        localStorage.setItem('chessmapUrl', settings.services.chessmap.url);
 
         // Apply dark mode
         if (settings.darkMode) {
@@ -980,8 +955,7 @@ Recommendations: ${report.recommendations.length}
             localStorage.setItem('theme', 'light');
         }
 
-        // Update config
-        Object.assign(this.config.services, settings.services);
+        // Update config (URLs remain from config.json)
         this.config.enableAppleOverseer = settings.enableAppleOverseer;
         this.config.enableDeconstructionSkill = settings.enableDeconstructionSkill;
         this.config.enableForwardThinkerSkill = settings.enableForwardThinkerSkill;

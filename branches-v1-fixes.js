@@ -227,7 +227,7 @@
       chatInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
           const settings = JSON.parse(localStorage.getItem('dashboardSettings') || '{}');
-          const hasApiKey = settings.claudeApiKey || settings.openaiApiKey;
+          const hasApiKey = settings.claudeApiKey;
           
           if (!hasApiKey) {
             e.preventDefault();
