@@ -369,45 +369,106 @@
       /* Inventory results */
       .results-header {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: 18px;
+        font-size: 22px;
         letter-spacing: 2px;
         color: var(--inventory);
-        margin-bottom: 12px;
-        padding-bottom: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
         border-bottom: 1px solid var(--border);
       }
 
+      .results-count {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
+
+      .results-count strong {
+        color: var(--text);
+      }
+
+      .card-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
       .inventory-item {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--inventory);
-        padding: 14px 16px;
-        margin: 8px 0;
-        border-radius: 8px;
-        transition: border-color .2s;
+        background: var(--surface2);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 5px solid var(--accent);
+        padding: 18px 20px;
+        border-radius: 10px;
+        transition: background .15s ease;
       }
 
       .inventory-item:hover {
-        border-color: var(--inventory);
-        border-left-color: var(--inventory);
+        background: #2a2e24;
+      }
+
+      .inventory-item.low-stock {
+        border-left-color: #f0ad4e;
+      }
+
+      .inventory-item-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
       }
 
       .inventory-item strong {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 16px;
-        letter-spacing: 1px;
-        color: var(--inventory);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        color: #fff;
         display: block;
-        margin-bottom: 6px;
+      }
+
+      .inventory-item-status {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        background: rgba(240, 173, 78, 0.2);
+        color: #f0ad4e;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .item-details {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 4px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 0;
       }
 
+      .item-detail-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .item-detail-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--muted);
+        font-weight: 600;
+        font-family: 'DM Mono', monospace;
+      }
+
+      .item-detail-value {
+        font-size: 16px;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* Legacy span fallback */
       .item-details span {
         display: inline-flex;
         align-items: center;
@@ -841,6 +902,14 @@ Hosta - Sum and Substance, 30, plants, Shade House, Large variety, 15"></textare
           const lines = response.answer.split('\n').filter(line => line.trim());
           let html = '<div class="content-card"><div class="results-header">Inventory Results</div>';
 
+          // Count items for summary
+          const itemLines = lines.filter(line => line.includes('Quantity:'));
+          if (itemLines.length > 0) {
+            html += '<div class="results-count">Found <strong>' + itemLines.length + '</strong> matching items</div>';
+          }
+
+          html += '<div class="card-list">';
+
           lines.forEach(line => {
             if (line.includes('Quantity:')) {
               const itemMatch = line.match(/[•⚠️]\s*(.+?):\s*Quantity:\s*(\d+)\s*(\w+)/);
@@ -849,23 +918,30 @@ Hosta - Sum and Substance, 30, plants, Shade House, Large variety, 15"></textare
               const lowStockMatch = line.includes('⚠️');
 
               if (itemMatch) {
-                html += '<div class="inventory-item">';
-                html += '<strong>' + (lowStockMatch ? '⚠ ' : '') + itemMatch[1] + '</strong>';
+                html += '<div class="inventory-item' + (lowStockMatch ? ' low-stock' : '') + '">';
+                html += '<div class="inventory-item-header">';
+                html += '<strong>' + itemMatch[1].trim() + '</strong>';
+                if (lowStockMatch) {
+                  html += '<span class="inventory-item-status">LOW STOCK</span>';
+                }
+                html += '</div>';
                 html += '<div class="item-details">';
-                html += '<span>QTY ' + itemMatch[2] + ' ' + itemMatch[3] + '</span>';
+                html += '<div class="item-detail-group"><span class="item-detail-label">Quantity</span><span class="item-detail-value">' + itemMatch[2] + ' ' + itemMatch[3] + '</span></div>';
                 if (locationMatch) {
-                  html += '<span>' + locationMatch[1].trim() + '</span>';
+                  html += '<div class="item-detail-group"><span class="item-detail-label">Location</span><span class="item-detail-value">' + locationMatch[1].trim() + '</span></div>';
                 }
                 if (notesMatch) {
-                  html += '<span>' + notesMatch[1] + '</span>';
+                  html += '<div class="item-detail-group"><span class="item-detail-label">Notes</span><span class="item-detail-value">' + notesMatch[1].trim() + '</span></div>';
                 }
                 html += '</div></div>';
               }
             }
           });
 
+          html += '</div>'; // close card-list
+
           if (!html.includes('inventory-item')) {
-            html = '<div class="content-card"><div style="white-space: pre-wrap; font-size: 13px;">' + response.answer + '</div>';
+            html = '<div class="content-card"><div style="white-space: pre-wrap; font-size: 15px;">' + response.answer + '</div>';
           }
 
           html += '<div class="source-info">Source: Inventory Database</div>';

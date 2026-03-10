@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Findings Display Options Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 40px;
+  }
+
+  h1 {
+    color: #a3b54f;
+    font-size: 18px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .section-label {
+    color: #8b9a46;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(139, 154, 70, 0.3);
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .option-column {
+    min-width: 0;
+  }
+
+  .option-title {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .option-desc {
+    color: #aaa;
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  .results-container {
+    background: #16213e;
+    border: 1px solid rgba(139, 154, 70, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .results-summary {
+    color: #ccc;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+
+  .results-summary strong {
+    color: #fff;
+  }
+
+  /* ========================================
+     OPTION 1: Card Layout
+     ======================================== */
+
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .item-card {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 5px solid #a3b54f;
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: background 0.15s ease;
+  }
+
+  .item-card:hover {
+    background: #1e2240;
+  }
+
+  .item-card.low-stock {
+    border-left-color: #f0ad4e;
+  }
+
+  .item-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .item-card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .item-card-status {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: rgba(240, 173, 78, 0.2);
+    color: #f0ad4e;
+  }
+
+  .item-card-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .item-card-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .item-card-detail-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    font-weight: 600;
+  }
+
+  .item-card-detail-value {
+    font-size: 16px;
+    color: #e0e0e0;
+    font-weight: 500;
+  }
+
+
+  /* ========================================
+     OPTION 3: Compact List with Tags
+     ======================================== */
+
+  .tag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tag-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .tag-item:last-child {
+    border-bottom: none;
+  }
+
+  .tag-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+  }
+
+  .tag-item-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+  }
+
+  .tag-item-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .tag-qty {
+    background: rgba(163, 181, 79, 0.2);
+    color: #b8cc5a;
+  }
+
+  .tag-location {
+    background: rgba(120, 170, 255, 0.15);
+    color: #8ab4f8;
+  }
+
+  .tag-notes {
+    background: rgba(255, 255, 255, 0.08);
+    color: #bbb;
+  }
+
+  .tag-low-stock {
+    background: rgba(240, 173, 78, 0.2);
+    color: #f0ad4e;
+    font-weight: 700;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .options-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div style="text-align: center; margin-bottom: 50px;">
+  <h1>Deep Roots</h1>
+  <p style="color: #999; font-size: 16px;">Findings Display — Style Comparison</p>
+</div>
+
+<div class="options-grid">
+
+  <!-- OPTION 1: Card Layout -->
+  <div class="option-column">
+    <div class="option-title">Option 1: Card Layout</div>
+    <div class="option-desc">Each item gets its own card with structured rows. Low stock items get an amber left border.</div>
+
+    <div class="results-container">
+      <div class="results-summary">Results for: <strong>24" Drain Basin</strong> — Found 8 matching items</div>
+
+      <div class="card-list">
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">24" Drain Basin</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">2 Boxes</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Tree Line</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">Drainage</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">4" Preferated w/ Sock Grade A</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">3 Roll</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Tree Line</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">4" x 100'</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">N 12 Dual Wall Corrugated</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">4 Stick</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Container</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">12' x 20'</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">Wine N Rose Weigelia</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">0 3gal</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Gen Pop</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">Wine N Rose</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">Twist n Shout Hydrangea</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">0 3gal</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Shade House</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">Twist n Shout</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">24" Drain Box</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">1 Boxes</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Tree Line</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">Drainage</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">4" Preferated w/ Sock Grade B</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">3 Roll</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Tree Line</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">4" x 100'</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-card low-stock">
+          <div class="item-card-header">
+            <span class="item-card-name">6" Preferated w/ Sock Grade A</span>
+            <span class="item-card-status">LOW STOCK</span>
+          </div>
+          <div class="item-card-details">
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Quantity</span>
+              <span class="item-card-detail-value">3 Roll</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Location</span>
+              <span class="item-card-detail-value">Tree Line</span>
+            </div>
+            <div class="item-card-detail">
+              <span class="item-card-detail-label">Notes</span>
+              <span class="item-card-detail-value">6" x 100'</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 3: Compact List with Tags -->
+  <div class="option-column">
+    <div class="option-title">Option 3: Compact List with Tags</div>
+    <div class="option-desc">Scannable list with color-coded pill badges. Clean and dense without feeling cluttered.</div>
+
+    <div class="results-container">
+      <div class="results-summary">Results for: <strong>24" Drain Basin</strong> — Found 8 matching items</div>
+
+      <div class="tag-list">
+
+        <div class="tag-item">
+          <span class="tag-item-name">24" Drain Basin</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">2 Boxes</span>
+            <span class="tag tag-location">Tree Line</span>
+            <span class="tag tag-notes">Drainage</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">4" Preferated w/ Sock Grade A</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">3 Roll</span>
+            <span class="tag tag-location">Tree Line</span>
+            <span class="tag tag-notes">4" x 100'</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">N 12 Dual Wall Corrugated</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">4 Stick</span>
+            <span class="tag tag-location">Container</span>
+            <span class="tag tag-notes">12' x 20'</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">Wine N Rose Weigelia</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">0 3gal</span>
+            <span class="tag tag-location">Gen Pop</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">Twist n Shout Hydrangea</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">0 3gal</span>
+            <span class="tag tag-location">Shade House</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">24" Drain Box</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">1 Boxes</span>
+            <span class="tag tag-location">Tree Line</span>
+            <span class="tag tag-notes">Drainage</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">4" Preferated w/ Sock Grade B</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">3 Roll</span>
+            <span class="tag tag-location">Tree Line</span>
+            <span class="tag tag-notes">4" x 100'</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+        <div class="tag-item">
+          <span class="tag-item-name">6" Preferated w/ Sock Grade A</span>
+          <div class="tag-item-tags">
+            <span class="tag tag-qty">3 Roll</span>
+            <span class="tag tag-location">Tree Line</span>
+            <span class="tag tag-notes">6" x 100'</span>
+            <span class="tag tag-low-stock">LOW STOCK</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
