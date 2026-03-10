@@ -90,6 +90,22 @@
   to = "/tv.html"
   status = 200
 
+# Let static assets pass through (don't rewrite to index.html)
+[[redirects]]
+  from = "/config.json"
+  to = "/config.json"
+  status = 200
+
+[[redirects]]
+  from = "/js/*"
+  to = "/js/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/styles/*"
+  to = "/styles/:splat"
+  status = 200
+
 # SPA routing - must be last
 [[redirects]]
   from = "/*"
