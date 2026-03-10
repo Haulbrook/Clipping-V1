@@ -8,7 +8,7 @@
   publish = "."
 
   # Skip build if no changes to frontend files
-  # ignore = "git diff --quiet HEAD^ HEAD -- . ':!code.js' ':!README.md'"
+  ignore = "git diff --quiet HEAD^ HEAD -- . ':!code.js' ':!README.md'"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -90,15 +90,8 @@
   to = "/tv.html"
   status = 200
 
-# Don't cache config.json
-[[headers]]
-  for = "/config.json"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-# SPA routing - only applies when no matching file exists
+# SPA routing - must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
