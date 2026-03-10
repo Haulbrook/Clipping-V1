@@ -8,7 +8,7 @@
   publish = "."
 
   # Skip build if no changes to frontend files
-  ignore = "git diff --quiet HEAD^ HEAD -- . ':!code.js' ':!README.md'"
+  # ignore = "git diff --quiet HEAD^ HEAD -- . ':!code.js' ':!README.md'"
 
 [build.environment]
   NODE_VERSION = "18"
