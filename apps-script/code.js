@@ -5,7 +5,7 @@
  *
  * Backend API for inventory tracking, fleet management, and operations
  *
- * @version 2.0.0
+ * @version 2.0.1
  * @author Deep Roots Landscape
  * @lastModified 2024-11-02
  *
@@ -518,6 +518,10 @@ function doPost(e) {
 
       case 'browseInventory':
         result = browseInventory();
+        break;
+
+      case 'browseInventoryPaginated':
+        result = browseInventoryPaginated(params[0] || {});
         break;
 
       default:
@@ -1758,6 +1762,119 @@ function browseInventory() {
   } catch (error) {
     Logger.log('Error browsing inventory: ' + error.toString());
     return { items: [], total: 0 };
+  }
+}
+
+// =============================
+// 📋 Browse Inventory (Paginated)
+// =============================
+function browseInventoryPaginated(params) {
+  try {
+    var page = parseInt(params.page) || 1;
+    var pageSize = parseInt(params.pageSize) || 50;
+    var query = (params.query || '').toLowerCase().trim();
+    var sortColumn = params.sortColumn || null;
+    var sortDirection = (params.sortDirection || 'asc').toLowerCase();
+
+    // Try to load from cache first
+    var cache = CacheService.getScriptCache();
+    var cacheKey = 'browse_inventory_all';
+    var allItems;
+    var cached = cache.get(cacheKey);
+
+    if (cached) {
+      allItems = JSON.parse(cached);
+    } else {
+      var ss = SpreadsheetApp.openById(CONFIG.INVENTORY_SHEET_ID);
+      var sheet = ss.getSheetByName(CONFIG.INVENTORY_SHEET_NAME);
+      var data = sheet.getDataRange().getValues();
+
+      var hdrs = data[0].map(function(h) { return String(h).toLowerCase().trim(); });
+      var costCol    = hdrs.indexOf('wholesale cost');
+      var retailCol  = hdrs.indexOf('retail price');
+      var updatedCol = hdrs.indexOf('price updated');
+
+      allItems = [];
+      for (var i = 1; i < data.length; i++) {
+        var name = data[i][0];
+        if (!name) continue;
+
+        var quantity = parseInt(data[i][1]) || 0;
+        var minStock = parseInt(data[i][5]) || 10;
+
+        allItems.push({
+          name: String(name),
+          quantity: quantity,
+          unit: String(data[i][2] || ''),
+          location: String(data[i][3] || ''),
+          notes: String(data[i][4] || ''),
+          minStock: minStock,
+          isLowStock: quantity < minStock && quantity >= minStock * 0.5,
+          isCritical: quantity < minStock * 0.5,
+          wholesaleCost: costCol >= 0    ? (data[i][costCol]    || null) : null,
+          retailPrice:   retailCol >= 0  ? (data[i][retailCol]  || null) : null,
+          priceUpdated:  updatedCol >= 0 ? (data[i][updatedCol] || null) : null
+        });
+      }
+
+      // Cache for 20 minutes (Apps Script limit: 6hrs, but keep fresh)
+      try {
+        cache.put(cacheKey, JSON.stringify(allItems), 1200);
+      } catch (e) {
+        Logger.log('Cache put failed (data too large): ' + e.toString());
+      }
+    }
+
+    // Filter
+    var filtered = allItems;
+    if (query) {
+      filtered = allItems.filter(function(item) {
+        var searchable = (item.name + ' ' + item.unit + ' ' + item.location + ' ' + item.notes).toLowerCase();
+        return searchable.indexOf(query) !== -1;
+      });
+    }
+
+    // Sort
+    if (sortColumn) {
+      var numericCols = ['quantity', 'minStock'];
+      var isNumeric = numericCols.indexOf(sortColumn) !== -1;
+      var asc = sortDirection === 'asc';
+
+      filtered.sort(function(a, b) {
+        var valA = a[sortColumn];
+        var valB = b[sortColumn];
+
+        if (isNumeric) {
+          valA = Number(valA) || 0;
+          valB = Number(valB) || 0;
+          return asc ? valA - valB : valB - valA;
+        }
+
+        valA = String(valA || '').toLowerCase();
+        valB = String(valB || '').toLowerCase();
+        var cmp = valA < valB ? -1 : (valA > valB ? 1 : 0);
+        return asc ? cmp : -cmp;
+      });
+    }
+
+    // Paginate
+    var total = filtered.length;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    page = Math.max(1, Math.min(page, totalPages));
+    var start = (page - 1) * pageSize;
+    var items = filtered.slice(start, start + pageSize);
+
+    return {
+      items: items,
+      total: total,
+      page: page,
+      pageSize: pageSize,
+      totalPages: totalPages
+    };
+
+  } catch (error) {
+    Logger.log('Error in browseInventoryPaginated: ' + error.toString());
+    return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
   }
 }
 

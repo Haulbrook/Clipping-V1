@@ -532,28 +532,44 @@ class ChatManager {
     async handleBrowseInventory() {
         this.showTypingIndicator(true);
 
+        // Initialize pagination state
+        this._browsePage = 1;
+        this._browsePageSize = 50;
+        this._browseTotalPages = 1;
+        this._browseQuery = '';
+        this._browseSortColumn = null;
+        this._browseSortAsc = true;
+        this._browseLoading = false;
+
+        // Create debounced filter function
+        this._debouncedBrowseFilter = PerformanceUtils.debounce((query) => {
+            this._browseQuery = query;
+            this._browsePage = 1;
+            this._fetchInventoryPage();
+        }, 300);
+
         try {
             const api = window.app?.api;
             if (!api) {
                 throw new Error('API manager not available');
             }
 
-            const result = await api.browseInventory();
+            const result = await api.browseInventoryPaginated({
+                page: 1,
+                pageSize: this._browsePageSize
+            });
             this.showTypingIndicator(false);
 
             const data = result?.response || result;
             const items = data?.items || [];
             const total = data?.total || items.length;
+            this._browsePage = data?.page || 1;
+            this._browseTotalPages = data?.totalPages || 1;
 
-            if (items.length === 0) {
+            if (items.length === 0 && total === 0) {
                 this.addMessage('No inventory items found. The inventory sheet may be empty.', 'assistant');
                 return;
             }
-
-            // Store items for sorting
-            this._browseItems = items;
-            this._browseSortColumn = null;
-            this._browseSortAsc = true;
 
             const tableHtml = this.buildInventoryTable(items, total);
             this.addMessage(tableHtml, 'assistant', 'inventory_table');
@@ -562,6 +578,67 @@ class ChatManager {
             this.showTypingIndicator(false);
             this.addMessage('Failed to load inventory. Please try again later.', 'assistant', 'error');
             console.error('Browse inventory error:', error);
+        }
+    }
+
+    async _fetchInventoryPage() {
+        if (this._browseLoading) return;
+        this._browseLoading = true;
+
+        const container = document.querySelector('.inventory-browse-container');
+        if (!container) { this._browseLoading = false; return; }
+
+        // Show loading overlay
+        let overlay = container.querySelector('.inventory-loading-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'inventory-loading-overlay';
+            overlay.innerHTML = '<span>Loading...</span>';
+            overlay.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;font-weight:600;z-index:10;';
+            container.style.position = 'relative';
+            container.appendChild(overlay);
+        }
+        overlay.style.display = 'flex';
+
+        // Disable pagination buttons
+        container.querySelectorAll('.inventory-page-btn').forEach(btn => btn.disabled = true);
+
+        try {
+            const api = window.app?.api;
+            if (!api) throw new Error('API manager not available');
+
+            const result = await api.browseInventoryPaginated({
+                page: this._browsePage,
+                pageSize: this._browsePageSize,
+                query: this._browseQuery,
+                sortColumn: this._browseSortColumn,
+                sortDirection: this._browseSortAsc ? 'asc' : 'desc'
+            });
+
+            const data = result?.response || result;
+            const items = data?.items || [];
+            const total = data?.total || 0;
+            this._browsePage = data?.page || 1;
+            this._browseTotalPages = data?.totalPages || 1;
+
+            // Rebuild table in place
+            const newHtml = this.buildInventoryTable(items, total);
+            container.outerHTML = newHtml;
+
+            // Restore filter input value
+            const filterInput = document.querySelector('.inventory-browse-filter');
+            if (filterInput && this._browseQuery) {
+                filterInput.value = this._browseQuery;
+            }
+
+            // Update sort indicators
+            this._updateSortIndicators();
+
+        } catch (error) {
+            console.error('Fetch inventory page error:', error);
+            if (overlay) overlay.style.display = 'none';
+        } finally {
+            this._browseLoading = false;
         }
     }
 
@@ -575,7 +652,9 @@ class ChatManager {
         let html = `<div class="inventory-browse-container">`;
         html += `<div class="inventory-browse-header">`;
         html += `<h4>Inventory (${total} items)</h4>`;
-        html += `<input type="text" class="inventory-browse-filter" placeholder="Filter items..." oninput="window.app.chat.filterInventoryTable(this.value)">`;
+        html += `<input type="text" class="inventory-browse-filter" placeholder="Filter items..." oninput="window.app.chat._debouncedBrowseFilter(this.value)"`;
+        if (this._browseQuery) html += ` value="${esc(this._browseQuery)}"`;
+        html += `>`;
         html += `</div>`;
         html += `<div class="inventory-browse-table-wrapper">`;
         html += `<table class="inventory-browse-table">`;
@@ -591,7 +670,11 @@ class ChatManager {
         ];
 
         columns.forEach(col => {
-            html += `<th onclick="window.app.chat.sortInventoryTable('${col.key}')" data-col="${col.key}">${esc(col.label)} <span class="sort-indicator"></span></th>`;
+            let indicator = '';
+            if (this._browseSortColumn === col.key) {
+                indicator = this._browseSortAsc ? ' ▲' : ' ▼';
+            }
+            html += `<th onclick="window.app.chat.sortInventoryTable('${col.key}')" data-col="${col.key}">${esc(col.label)} <span class="sort-indicator">${indicator}</span></th>`;
         });
 
         html += `</tr></thead><tbody>`;
@@ -617,12 +700,28 @@ class ChatManager {
             html += `</tr>`;
         });
 
-        html += `</tbody></table></div></div>`;
+        html += `</tbody></table></div>`;
+
+        // Pagination controls
+        html += `<div class="inventory-pagination" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0;">`;
+        html += `<button class="inventory-page-btn" onclick="window.app.chat.goToInventoryPage(${this._browsePage - 1})" ${this._browsePage <= 1 ? 'disabled' : ''}>Prev</button>`;
+        html += `<span>Page ${this._browsePage} of ${this._browseTotalPages}</span>`;
+        html += `<button class="inventory-page-btn" onclick="window.app.chat.goToInventoryPage(${this._browsePage + 1})" ${this._browsePage >= this._browseTotalPages ? 'disabled' : ''}>Next</button>`;
+        html += `</div>`;
+
+        html += `</div>`;
         return html;
     }
 
+    goToInventoryPage(page) {
+        if (this._browseLoading) return;
+        if (page < 1 || page > this._browseTotalPages) return;
+        this._browsePage = page;
+        this._fetchInventoryPage();
+    }
+
     sortInventoryTable(column) {
-        if (!this._browseItems) return;
+        if (this._browseLoading) return;
 
         if (this._browseSortColumn === column) {
             this._browseSortAsc = !this._browseSortAsc;
@@ -631,39 +730,11 @@ class ChatManager {
             this._browseSortAsc = true;
         }
 
-        const numericCols = ['quantity', 'minStock'];
-        const isNumeric = numericCols.includes(column);
+        this._browsePage = 1;
+        this._fetchInventoryPage();
+    }
 
-        this._browseItems.sort((a, b) => {
-            let valA = a[column];
-            let valB = b[column];
-
-            if (isNumeric) {
-                valA = Number(valA) || 0;
-                valB = Number(valB) || 0;
-                return this._browseSortAsc ? valA - valB : valB - valA;
-            }
-
-            valA = String(valA || '').toLowerCase();
-            valB = String(valB || '').toLowerCase();
-            const cmp = valA.localeCompare(valB);
-            return this._browseSortAsc ? cmp : -cmp;
-        });
-
-        // Rebuild the table body
-        const table = document.querySelector('.inventory-browse-table');
-        if (!table) return;
-
-        const tbody = table.querySelector('tbody');
-        const newHtml = this.buildInventoryTable(this._browseItems, this._browseItems.length);
-
-        // Replace existing container content
-        const container = document.querySelector('.inventory-browse-container');
-        if (container) {
-            container.outerHTML = newHtml;
-        }
-
-        // Update sort indicators
+    _updateSortIndicators() {
         setTimeout(() => {
             const headers = document.querySelectorAll('.inventory-browse-table th');
             headers.forEach(th => {
@@ -680,13 +751,10 @@ class ChatManager {
     }
 
     filterInventoryTable(query) {
-        const rows = document.querySelectorAll('.inventory-browse-table tbody tr');
-        const lowerQuery = query.toLowerCase();
-
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(lowerQuery) ? '' : 'none';
-        });
+        // Legacy fallback — now handled by _debouncedBrowseFilter
+        if (this._debouncedBrowseFilter) {
+            this._debouncedBrowseFilter(query);
+        }
     }
 
     showTypingIndicator(show) {

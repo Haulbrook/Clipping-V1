@@ -256,6 +256,15 @@ class APIManager {
         }
     }
 
+    async browseInventoryPaginated(params) {
+        try {
+            return await this.callGoogleScript('inventory', 'browseInventoryPaginated', [params]);
+        } catch (error) {
+            console.error('Paginated browse failed:', error);
+            return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+        }
+    }
+
     async updateInventory(updateData) {
         try {
             return await this.callGoogleScript('inventory', 'updateInventory', [updateData]);
